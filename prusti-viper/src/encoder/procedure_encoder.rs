@@ -19,6 +19,7 @@ use crate::encoder::mir_successor::MirSuccessor;
 use crate::encoder::places::{Local, LocalVariableManager, Place};
 use crate::encoder::Encoder;
 use crate::encoder::snapshot_spec_patcher::SnapshotSpecPatcher;
+use crate::encoder::utils::const_eval_array_size;
 use prusti_common::{
     config,
     report::log,
@@ -65,6 +66,7 @@ use ::log::{trace, debug};
 use std::borrow::Borrow as StdBorrow;
 use prusti_interface::environment::borrowck::regions::PlaceRegionsError;
 use crate::encoder::errors::EncodingErrorKind;
+use std::convert::TryInto;
 
 pub struct ProcedureEncoder<'p, 'v: 'p, 'tcx: 'v> {
     encoder: &'p Encoder<'v, 'tcx>,
@@ -1186,11 +1188,22 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                             stmt.source_info.span,
                         )?
                     }
-                    &mir::Rvalue::Len(..) => {
-                        return Err(SpannedEncodingError::unsupported(
-                            "obtaining the length of an array is unsupported",
-                            stmt.source_info.span,
-                        ))
+                    &mir::Rvalue::Len(ref place) => {
+                        let tcx = self.encoder.env().tcx();
+                        let place_ty = place.ty(&self.mir.local_decls, tcx).ty;
+                        let len = if let ty::Array(_, len) = place_ty.kind() {
+                            const_eval_array_size(tcx, len)
+                        } else {
+                            unreachable!("tried to get len, but wasn't an array")
+                        };
+
+                        let len_encoded = vir::Expr::Const(
+                            vir::Const::Int(len.try_into().unwrap()),
+                            vir::Position::default(),
+                        );
+
+                        // TODO
+                        vec![]
                     }
                     ref rhs => {
                         unimplemented!("encoding of '{:?}'", rhs);
@@ -2150,10 +2163,18 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                     vir::Expr::not(cond_var.into())
                 };
 
+                let msg_desc = 
+                    // rustc_middle/src/mir/mod.rs says BoundsCheck is expected to be handled by
+                    // the caller (?!)
+                    if let mir::AssertKind::BoundsCheck{ .. } = msg {
+                        "BoundsCheck"
+                    } else {
+                        msg.description()
+                    };
                 // Check or assume the assertion
                 stmts.push(vir::Stmt::comment(format!(
                     "Rust assertion: {}",
-                    msg.description()
+                    msg_desc
                 )));
                 if self.check_panics {
                     stmts.push(vir::Stmt::Assert(
@@ -2161,7 +2182,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                         vir::FoldingBehaviour::Stmt,
                         self.encoder.error_manager().register(
                             term.source_info.span,
-                            ErrorCtxt::AssertTerminator(msg.description().to_string()),
+                            ErrorCtxt::AssertTerminator(msg_desc.to_string()),
                         ),
                     ));
                 } else {

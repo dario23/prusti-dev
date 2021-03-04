@@ -142,6 +142,7 @@ pub enum Type {
     Bool,
     //Ref, // At the moment we don't need this
     /// TypedRef: the first parameter is the name of the predicate that encodes the type
+    // TODO: do we add a type here? or will array be TypedRef?
     TypedRef(String),
     Domain(String),
 }

@@ -208,6 +208,10 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                 (encoded_base, base_ty, Some(variant_index.into()))
             }
 
+            mir::ProjectionElem::Index(ref idx) => {
+                todo!("lookup({:?})", idx);
+            }
+
             x => unimplemented!("{:?}", x),
         })
     }

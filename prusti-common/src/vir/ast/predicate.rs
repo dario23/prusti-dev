@@ -41,6 +41,7 @@ impl Predicate {
     /// Is this predicate abstract.
     pub fn is_abstract(&self) -> bool {
         match self {
+            // TODO: probably need to add array abstract predicates here?
             Predicate::Struct(StructPredicate { body: None, .. }) => true,
             _ => false,
         }
@@ -93,6 +94,12 @@ impl Predicate {
             variants: variants,
         })
     }
+    /// A bodyless predicate for encoding an array of size `size` and element type `ty`
+    pub fn new_array(&self) -> ! {
+        todo!("new_array")
+    }
+
+
     /// A `self` place getter.
     pub fn self_place(&self) -> Expr {
         match self {

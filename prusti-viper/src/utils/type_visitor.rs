@@ -7,7 +7,7 @@
 use rustc_hir::Mutability;
 use rustc_middle::ty::{
     AdtDef, FieldDef, ParamTy, ProjectionTy, Region, Slice, Ty, TyCtxt,
-    TypeFlags, TyKind, IntTy, UintTy, VariantDef, subst::SubstsRef
+    TypeFlags, TyKind, IntTy, UintTy, VariantDef, subst::SubstsRef, Const,
 };
 use rustc_hir::def_id::DefId;
 use log::trace;
@@ -64,6 +64,9 @@ pub trait TypeVisitor<'tcx>: Sized {
             }
             TyKind::FnDef(def_id, substs) => {
                 self.visit_fndef(def_id, substs)
+            }
+            TyKind::Array(ty, size) => {
+                self.visit_array(ty, size)
             }
             ref x => {
                 self.visit_unsupported_sty(x)
@@ -193,6 +196,15 @@ pub trait TypeVisitor<'tcx>: Sized {
         trace!("visit_fndef({:?})", def_id);
         walk_fndef(self, def_id, substs)
     }
+
+    fn visit_array(
+        &mut self,
+        ty: Ty<'tcx>,
+        size: &'tcx Const<'tcx>,
+    ) -> Result<(), Self::Error> {
+        trace!("visit_array({:?}, {:?})", ty, size);
+        walk_array(self, ty, size)
+    }
 }
 
 pub fn walk_adt<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
@@ -288,3 +300,12 @@ pub fn walk_fndef<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
     }
     Ok(())
 }
+
+pub fn walk_array<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
+    visitor: &mut V,
+    ty: Ty<'tcx>,
+    _size: &'tcx Const<'tcx>,
+) -> Result<(), E> {
+    visitor.visit_ty(ty)
+}
+

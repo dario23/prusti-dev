@@ -8,6 +8,7 @@ use crate::encoder::foldunfold;
 use crate::encoder::utils::range_extract;
 use crate::encoder::utils::PlusOne;
 use crate::encoder::Encoder;
+use crate::encoder::utils;
 use prusti_common::vir::{self, ExprIterator, ExprFolder};
 use prusti_common::config;
 // use prusti_interface::specifications::*;
@@ -175,6 +176,16 @@ impl<'p, 'v, 'r: 'v, 'tcx: 'v> TypeEncoder<'p, 'v, 'tcx> {
                 return Err(EncodingError::unsupported(
                     "raw pointers are not supported"
                 ));
+            }
+
+            ty::TyKind::Array(ref ty, len) => {
+                let scalar_len = utils::const_eval_array_size(self.encoder.env().tcx(), len);
+                let elem_ty = self.encoder.encode_type_predicate_use(ty)?;
+                // unimplemented!("array${}${}", elem_ty, scalar_len);
+                vir::Field::new(
+                    "array_todo",
+                    vir::Type::TypedRef(format!("array${}${}", elem_ty, scalar_len)),
+                )
             }
 
             ref x => unimplemented!("{:?}", x),
@@ -476,24 +487,7 @@ impl<'p, 'v, 'r: 'v, 'tcx: 'v> TypeEncoder<'p, 'v, 'tcx> {
             ty::TyKind::Str => "str".to_string(),
 
             ty::TyKind::Array(elem_ty, size) => {
-                let scalar_size = match size.val {
-                    ty::ConstKind::Value(ref value) => {
-                        value.try_to_bits(
-                            rustc_target::abi::Size::from_bits(64)
-                        ).unwrap()
-                    },
-                    ty::ConstKind::Unevaluated(def, ref substs, promoted) => {
-                        let tcx = self.encoder.env().tcx();
-                        let param_env = tcx.param_env(def.did);
-                        tcx.const_eval_resolve(param_env, def, substs, promoted, None)
-                            .ok()
-                            .and_then(|const_value| const_value.try_to_bits(
-                                rustc_target::abi::Size::from_bits(64)
-                            ))
-                            .unwrap()
-                    }
-                    x => unimplemented!("{:?}", x),
-                };
+                let scalar_size = utils::const_eval_array_size(self.encoder.env().tcx(), size);
                 format!(
                     "array${}${}",
                     self.encoder.encode_type_predicate_use(elem_ty)?,
