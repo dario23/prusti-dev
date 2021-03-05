@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="basic.html" class="active"><strong aria-hidden="true">3.</strong> Basic Usage</a></li><li class="chapter-item expanded "><a href="verify/summary.html"><strong aria-hidden="true">4.</strong> Verification Features</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="verify/panic.html"><strong aria-hidden="true">4.1.</strong> Absence of panics</a></li><li class="chapter-item expanded "><a href="verify/overflow.html"><strong aria-hidden="true">4.2.</strong> Overflow checks</a></li><li class="chapter-item expanded "><a href="verify/prepost.html"><strong aria-hidden="true">4.3.</strong> Pre- and postconditions</a></li><li class="chapter-item expanded "><a href="verify/trusted.html"><strong aria-hidden="true">4.4.</strong> Trusted functions</a></li><li class="chapter-item expanded "><a href="verify/pure.html"><strong aria-hidden="true">4.5.</strong> Pure functions</a></li><li class="chapter-item expanded "><a href="verify/external.html"><strong aria-hidden="true">4.6.</strong> External specifications</a></li><li class="chapter-item expanded "><a href="verify/loop.html"><strong aria-hidden="true">4.7.</strong> Loop body invariants</a></li><li class="chapter-item expanded "><a href="verify/pledge.html"><strong aria-hidden="true">4.8.</strong> Pledges</a></li><li class="chapter-item expanded "><a href="verify/traits.html"><strong aria-hidden="true">4.9.</strong> Trait contract refinement</a></li><li class="chapter-item expanded "><a href="verify/closure.html"><strong aria-hidden="true">4.10.</strong> Closures</a></li><li class="chapter-item expanded "><a href="verify/spec_ent.html"><strong aria-hidden="true">4.11.</strong> Specification entailments</a></li></ol></li><li class="chapter-item expanded "><a href="syntax.html"><strong aria-hidden="true">5.</strong> Specification Syntax</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="basic.html" class="active"><strong aria-hidden="true">3.</strong> Basic Usage</a></li><li class="chapter-item expanded "><a href="verify/summary.html"><strong aria-hidden="true">4.</strong> Verification Features</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="verify/panic.html"><strong aria-hidden="true">4.1.</strong> Absence of panics</a></li><li class="chapter-item expanded "><a href="verify/overflow.html"><strong aria-hidden="true">4.2.</strong> Overflow checks</a></li><li class="chapter-item expanded "><a href="verify/prepost.html"><strong aria-hidden="true">4.3.</strong> Pre- and postconditions</a></li><li class="chapter-item expanded "><a href="verify/trusted.html"><strong aria-hidden="true">4.4.</strong> Trusted functions</a></li><li class="chapter-item expanded "><a href="verify/pure.html"><strong aria-hidden="true">4.5.</strong> Pure functions</a></li><li class="chapter-item expanded "><a href="verify/predicate.html"><strong aria-hidden="true">4.6.</strong> Predicates</a></li><li class="chapter-item expanded "><a href="verify/external.html"><strong aria-hidden="true">4.7.</strong> External specifications</a></li><li class="chapter-item expanded "><a href="verify/loop.html"><strong aria-hidden="true">4.8.</strong> Loop body invariants</a></li><li class="chapter-item expanded "><a href="verify/pledge.html"><strong aria-hidden="true">4.9.</strong> Pledges</a></li><li class="chapter-item expanded "><a href="verify/traits.html"><strong aria-hidden="true">4.10.</strong> Trait contract refinement</a></li><li class="chapter-item expanded "><a href="verify/closure.html"><strong aria-hidden="true">4.11.</strong> Closures</a></li><li class="chapter-item expanded "><a href="verify/spec_ent.html"><strong aria-hidden="true">4.12.</strong> Specification entailments</a></li></ol></li><li class="chapter-item expanded "><a href="syntax.html"><strong aria-hidden="true">5.</strong> Specification Syntax</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -163,8 +163,8 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#basic-usage" id="basic-usage">Basic Usage</a></h1>
-<h2><a class="header" href="#prusti-assistant" id="prusti-assistant">Prusti Assistant</a></h2>
+                        <h1 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h1>
+<h2 id="prusti-assistant"><a class="header" href="#prusti-assistant">Prusti Assistant</a></h2>
 <p>When the Prusti Assistant extension is active, Rust files can be verified in one of the following ways:</p>
 <ul>
 <li>By clicking the &quot;Verify with Prusti&quot; button in the status bar.</li>
@@ -173,11 +173,11 @@
 <li>By opening a Rust document, if &quot;Verify on open&quot; is enabled.</li>
 </ul>
 <p>See the <a href="verify/summary.html">following chapter</a> for a list of verification features available in Prusti.</p>
-<h2><a class="header" href="#command-line" id="command-line">Command line</a></h2>
+<h2 id="command-line"><a class="header" href="#command-line">Command line</a></h2>
 <p>To run Prusti on a file using the command-line setup:</p>
 <pre><code class="language-bash">$ prusti-rustc --edition=2018 path/to/file.rs
 </code></pre>
-<h2><a class="header" href="#introductory-example" id="introductory-example">Introductory example</a></h2>
+<h2 id="introductory-example"><a class="header" href="#introductory-example">Introductory example</a></h2>
 <p>Let us verify that the function <code>max</code> below, which takes two integers and returns the greater one, is implemented correctly.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
