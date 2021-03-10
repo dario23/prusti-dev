@@ -164,29 +164,28 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="predicates"><a class="header" href="#predicates">Predicates</a></h1>
-<p>Predicates are somewhat like pure functions in that they are
-deterministic and side-effect free and used in specifications.</p>
-<p>They are more powerful than pure functions: inside predicates the full
-<a href="../syntax.html">Prusti specification syntax</a> is allowed. In exchange,
-they are not usable in regular Rust code, as there are no direct Rust
-equivalents for specification constructs like
-<a href="../syntax.html#quantifiers">quantifiers</a> or
-<a href="../syntax.html#implications">implications</a>.</p>
+<p>Predicates are similar to <a href="pure.html">pure functions</a> in that they are deterministic and side-effect free and used in specifications.</p>
+<p>They are more powerful than pure functions: inside predicate bodies the full <a href="../syntax.html">Prusti specification syntax</a> is allowed. However, they are not usable in regular Rust code, as there are no direct Rust equivalents for specification constructs like <a href="../syntax.html#quantifiers">quantifiers</a> or <a href="../syntax.html#implications">implications</a>. Instead, predicates can only be called from within specifications.</p>
+<p>Predicates are declared using the <code>#[predicate]</code> attribute on a function:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>#[predicate]
-fn all_zeroes(a: MyArray) -&gt; bool {
-	forall(|i: usize|
-		(0 &lt;= i &amp;&amp; i &lt; a.len() ==&gt; a.lookup(i) == 0))
+fn all_zeros(a: &amp;MyArray) -&gt; bool {
+    forall(|i: usize|
+        (0 &lt;= i &amp;&amp; i &lt; a.len() ==&gt; a.lookup(i) == 0))
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Predicates are incompatible with other types of Prusti specifications,
-i.e. they don't have pre- or postconditions, and as their function
-bodies aren't Rust but Prusti syntax, it doesn't make sense to declare
-them <code>#[pure]</code> or <code>#[trusted]</code> (or, in some sense, they are
-automatically).</p>
+<p>Within specifications, predicates can be called just like pure functions:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[ensures(all_zeros(a))]
+fn zero(a: &amp;mut MyArray) { ... }
+<span class="boring">}
+</span></code></pre></pre>
+<p>The <code>#[predicate]</code> attribute is incompatible with other Prusti specifications, i.e. a predicate function cannot have pre- or postconditions. The body of a predicate must be provided, so it cannot be <a href="trusted.html"><code>#[trusted]</code></a>. Predicates are always considered pure.</p>
 
                     </main>
 
