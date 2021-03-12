@@ -17,6 +17,7 @@ use rustc_middle::{mir, ty};
 use rustc_index::vec::{Idx, IndexVec};
 use rustc_span::{Span, DUMMY_SP};
 use log::{trace, debug};
+use viper::Position;
 use std::collections::HashMap;
 
 pub static PRECONDITION_LABEL: &'static str = "pre";
@@ -209,7 +210,11 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
             }
 
             mir::ProjectionElem::Index(ref idx) => {
-                todo!("lookup({:?})", idx);
+                // TODO(dario23): what do we do here? we're not actually returning an expression,
+                // but would like to emit a sequence of statemnts instead..
+                trace!("lookup({:?})", idx);
+                // let no_expr = vir::Expr::Const(vir::Const::Int(42), vir::Position::default());
+                (encoded_base, base_ty, None)
             }
 
             x => unimplemented!("{:?}", x),

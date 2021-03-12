@@ -1189,6 +1189,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                         )?
                     }
                     &mir::Rvalue::Len(ref place) => {
+                        // TODO: de-duplicate with pure_function_encoder
                         let tcx = self.encoder.env().tcx();
                         let place_ty = place.ty(&self.mir.local_decls, tcx).ty;
                         let len = if let ty::Array(_, len) = place_ty.kind() {
@@ -1202,8 +1203,16 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                             vir::Position::default(),
                         );
 
-                        // TODO
-                        vec![]
+                        // let assign =
+                        //     vir::Stmt::Assign(encoded_lhs, len_encoded, vir::AssignKind::Copy);
+                        // vec![assign]
+
+                        self.encode_copy_value_assign2(
+                            encoded_lhs,
+                            len_encoded,
+                            vir::Field::new("val_int", vir::Type::Int),
+                            location,
+                        )?
                     }
                     ref rhs => {
                         unimplemented!("encoding of '{:?}'", rhs);
@@ -5104,6 +5113,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         Ok(stmts)
     }
 
+    // TODO: what does this do?
     fn encode_copy2(
         &mut self,
         src: vir::Expr,
@@ -5141,6 +5151,10 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                 // encode a closure deep copy or at least a stub
                 debug!("warning: ty::TyKind::Closure not implemented yet");
                 Vec::new()
+            }
+            ty::TyKind::Array(_ty, _len) => {
+                // TODO
+                vec![vir::Stmt::Comment(format!("{} := copy array {}", dst, src))]
             }
 
             ref x => unimplemented!("{:?}", x),
@@ -5250,10 +5264,31 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
             }
 
             &mir::AggregateKind::Array(..) => {
-                return Err(SpannedEncodingError::unsupported(
-                    "construction of arrays is not supported",
-                    span
-                ));
+                trace!("A: dst={:?}", dst);
+                trace!("A: ty={:?}", ty);
+                trace!("A: operands={:?}", operands);
+
+                // TODO
+                let elem_ty = ty;
+                // let localvar = if let vir::Expr::Local(lv, _) = dst { lv } else { unreachable!() };
+
+                stmts.push(
+                    vir::Stmt::Inhale(
+                        vir::Expr::Const(vir::Const::Int(420), vir::Position::default()),
+                        FoldingBehaviour::Stmt,
+                        // vir::Expr::eq_cmp(
+                        //     vir::Expr::FuncApp("array$42$23$lookup_pure".to_string(), vec![dst.clone(), vir::Expr::Const(vir::Const::Int(0), vir::Position::default())], vec![/* TODO */], vir::Type::Int, vir::Position::default()),
+                        //     vir::Expr::Const(vir::Const::Int(42), vir::Position::default()),
+                        //     ),
+                        //     FoldingBehaviour::Stmt,
+                        // )
+                        )
+                    );
+
+                //return Err(SpannedEncodingError::unsupported(
+                //    "construction of arrays is not supported",
+                //    span
+                //));
             }
 
             &mir::AggregateKind::Generator(..) => {

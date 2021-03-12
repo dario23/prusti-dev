@@ -7,6 +7,7 @@
 use crate::encoder::foldunfold;
 use crate::encoder::utils::range_extract;
 use crate::encoder::utils::PlusOne;
+use crate::encoder::utils::const_eval_array_size;
 use crate::encoder::Encoder;
 use crate::encoder::utils;
 use prusti_common::vir::{self, ExprIterator, ExprFolder};
@@ -182,6 +183,7 @@ impl<'p, 'v, 'r: 'v, 'tcx: 'v> TypeEncoder<'p, 'v, 'tcx> {
                 let scalar_len = utils::const_eval_array_size(self.encoder.env().tcx(), len);
                 let elem_ty = self.encoder.encode_type_predicate_use(ty)?;
                 // unimplemented!("array${}${}", elem_ty, scalar_len);
+                // TODO
                 vir::Field::new(
                     "array_todo",
                     vir::Type::TypedRef(format!("array${}${}", elem_ty, scalar_len)),
@@ -403,6 +405,14 @@ impl<'p, 'v, 'r: 'v, 'tcx: 'v> TypeEncoder<'p, 'v, 'tcx> {
                 }
             }
 
+            ty::TyKind::Array(elem_ty, len) => {
+                let ty_name = self.encode_predicate_use()?;
+                vec![
+                    vir::Predicate::new_abstract(vir::Type::TypedRef(ty_name)),
+                    // TODO: more
+                ]
+            }
+
             ref ty_variant => {
                 debug!("Encoding of type '{:?}' is incomplete", ty_variant);
                 vec![vir::Predicate::new_abstract(typ)]
@@ -495,6 +505,7 @@ impl<'p, 'v, 'r: 'v, 'tcx: 'v> TypeEncoder<'p, 'v, 'tcx> {
                 )
             }
 
+            // TODO(dario23)
             ty::TyKind::Slice(array_ty) => {
                 format!(
                     "slice${}",

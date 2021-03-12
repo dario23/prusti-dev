@@ -943,6 +943,7 @@ impl<'v, 'tcx> Encoder<'v, 'tcx> {
             self.encode_type_predicate_def(ty)?;
         }
         let predicate_name = self.type_predicate_names.borrow()[&ty.kind()].clone();
+        trace!("encode_type_predicate_use({:?}) = {}", ty, predicate_name);
         Ok(predicate_name)
     }
 
@@ -1543,8 +1544,7 @@ impl<'v, 'tcx> Encoder<'v, 'tcx> {
                 "Encoding: {} from {:?} ({})",
                 proc_name, proc_span, proc_def_path
             );
-            let is_pure_function = self.is_pure(proc_def_id);
-            if is_pure_function {
+            if self.is_pure(proc_def_id) {
                 if let Err(error) = self.encode_pure_function_def(proc_def_id, substs) {
                     self.register_encoding_error(error);
                     debug!("Error encoding pure function: {:?}", proc_def_id);
@@ -1616,9 +1616,7 @@ impl<'v, 'tcx> Encoder<'v, 'tcx> {
                     .filter(|(_typ1, typ2)| typ2 == &typ)
                     .map(|(typ1, typ2)| (typ1.clone(), typ2.clone()))
                     .collect();
-                for (typ, subst) in additional_substs {
-                    map.insert(typ, subst);
-                }
+                map.extend(additional_substs.into_iter());
             }
         }
         map

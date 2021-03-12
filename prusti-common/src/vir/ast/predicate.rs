@@ -94,11 +94,6 @@ impl Predicate {
             variants: variants,
         })
     }
-    /// A bodyless predicate for encoding an array of size `size` and element type `ty`
-    pub fn new_array(&self) -> ! {
-        todo!("new_array")
-    }
-
 
     /// A `self` place getter.
     pub fn self_place(&self) -> Expr {

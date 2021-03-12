@@ -14,6 +14,7 @@ use crate::encoder::mir_encoder::{PRECONDITION_LABEL, WAND_LHS_LABEL};
 use crate::encoder::mir_interpreter::{
     run_backward_interpretation, BackwardMirInterpreter, MultiExprBackwardInterpreterState,
 };
+use crate::encoder::utils::const_eval_array_size;
 use crate::encoder::Encoder;
 use crate::encoder::snapshot_spec_patcher::SnapshotSpecPatcher;
 use prusti_common::vir;
@@ -30,6 +31,7 @@ use prusti_interface::PrustiError;
 use rustc_span::Span;
 use crate::encoder::errors::EncodingResult;
 use crate::encoder::errors::SpannedEncodingResult;
+use std::convert::TryInto;
 
 pub struct PureFunctionEncoder<'p, 'v: 'p, 'tcx: 'v> {
     encoder: &'p Encoder<'v, 'tcx>,
@@ -883,9 +885,18 @@ impl<'p, 'v: 'p, 'tcx: 'v> BackwardMirInterpreter<'tcx>
                     vir::Expr::not(cond_val)
                 };
 
+                let msg_desc =
+                    // rustc_middle/src/mir/mod.rs says BoundsCheck is expected to be handled by
+                    // the caller (?!)
+                    if let mir::AssertKind::BoundsCheck{ .. } = msg {
+                        "BoundsCheck"
+                    } else {
+                        msg.description()
+                    };
+
                 let pos = self.encoder.error_manager().register(
                     term.source_info.span,
-                    ErrorCtxt::PureFunctionAssertTerminator(msg.description().to_string()),
+                    ErrorCtxt::PureFunctionAssertTerminator(msg_desc.to_string()),
                 );
 
                 MultiExprBackwardInterpreterState::new(
@@ -1224,6 +1235,25 @@ impl<'p, 'v: 'p, 'tcx: 'v> BackwardMirInterpreter<'tcx>
                         // Substitute a place of a value with an expression
                         state.substitute_value(&opt_lhs_value_place.unwrap(), encoded_val);
                     }
+
+                    &mir::Rvalue::Len(ref place) => {
+                        // TODO: de-duplicate with procedure_encoder
+                        let tcx = self.encoder.env().tcx();
+                        let place_ty = place.ty(&self.mir.local_decls, tcx).ty;
+                        let len = if let ty::Array(_, len) = place_ty.kind() {
+                            const_eval_array_size(tcx, len)
+                        } else {
+                            unreachable!("tried to get len, but wasn't an array")
+                        };
+
+                        let len_encoded = vir::Expr::Const(
+                            vir::Const::Int(len.try_into().unwrap()),
+                            vir::Position::default(),
+                        );
+
+                        state.substitute_value(&opt_lhs_value_place.unwrap(), len_encoded);
+                    }
+
 
                     ref rhs => {
                         unimplemented!("encoding of '{:?}'", rhs);
